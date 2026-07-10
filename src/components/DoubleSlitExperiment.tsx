@@ -44,8 +44,8 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
 
     // Scale: 1mm = 60 pixels in the simulation view
     const scale = 180
-    const slitX = 80
-    const screenX = W - 60
+    const slitX = 100
+    const screenX = W - 70
 
     // Clear
     ctx.fillStyle = '#060b18'
@@ -65,27 +65,27 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
     ctx.lineWidth = 1
     ctx.strokeRect(slitX - 6, 0, 12, H)
 
-    // Draw slits
-    const slitH = 20
-    const slitY1 = H / 2 - d * scale / 2 - slitH / 2
-    const slitY2 = H / 2 + d * scale / 2 - slitH / 2
+    // Draw slits with fixed height (independent of fringe width)
+    const slitH = 30
+    const slitCenter1 = H / 2 - d * scale / 2
+    const slitCenter2 = H / 2 + d * scale / 2
 
     ctx.fillStyle = '#060b18'
-    ctx.fillRect(slitX - 2, slitY1, 4, slitH)
-    ctx.fillRect(slitX - 2, slitY2, 4, slitH)
+    ctx.fillRect(slitX - 2, slitCenter1 - slitH / 2, 4, slitH)
+    ctx.fillRect(slitX - 2, slitCenter2 - slitH / 2, 4, slitH)
 
     // Slit labels
     ctx.fillStyle = '#64748b'
     ctx.font = '11px Inter, sans-serif'
     ctx.textAlign = 'center'
-    ctx.fillText('S₁', slitX, slitY1 - 8)
-    ctx.fillText('S₂', slitX, slitY2 - 8)
+    ctx.fillText('S₁', slitX, slitCenter1 - slitH / 2 - 8)
+    ctx.fillText('S₂', slitX, slitCenter2 - slitH / 2 - 8)
 
     // Draw wavefronts from slits
     if (showWave) {
       const t = timeRef.current
       for (let slit = 0; slit < 2; slit++) {
-        const sy = slit === 0 ? H / 2 - d * scale / 2 : H / 2 + d * scale / 2
+        const sy = slit === 0 ? slitCenter1 : slitCenter2
         const maxR = screenX - slitX
 
         for (let r = 0; r < maxR; r += 6) {
@@ -103,39 +103,17 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
       }
     }
 
-    // Draw rays to screen
-    const numRays = 120
-    for (let i = 0; i < numRays; i++) {
-      const screenY = (i / numRays) * H
-      const theta = Math.atan2(screenY - H / 2, screenX - slitX)
-
-      const pathDiff1 = d * scale / 2 * Math.sin(theta)
-      const pathDiff2 = -d * scale / 2 * Math.sin(theta)
-      const phase1 = (pathDiff1 / (lambda * scale)) * 2 * Math.PI
-      const phase2 = (pathDiff2 / (lambda * scale)) * 2 * Math.PI
-
-      const amp1 = Math.sin(Math.PI * a * scale * Math.sin(theta) / (lambda * scale)) / (Math.PI * a * scale * Math.sin(theta) / (lambda * scale) + 0.001)
-      const amp = amp1 * Math.cos(Math.PI * d * scale * Math.sin(theta) / (lambda * scale))
-      const intensity = amp * amp * 255
-
-      if (intensity > 5) {
-        ctx.strokeStyle = `rgba(0, 212, 255, ${Math.min(intensity / 255, 0.3)})`
-        ctx.lineWidth = 0.5
-        ctx.beginPath()
-        ctx.moveTo(slitX + 6, H / 2)
-        ctx.lineTo(screenX - 2, screenY)
-        ctx.stroke()
-      }
+    // Draw interference fringes on screen (actual pattern)
+    for (let y = 0; y < H; y++) {
+      const theta = Math.atan2(y - H / 2, screenX - slitX)
+      const alpha = Math.PI * d * 1e-3 * Math.sin(theta) / lambda
+      const intensity = Math.cos(alpha) * Math.cos(alpha)
+      const v = Math.round(Math.min(intensity, 1) * 220)
+      ctx.fillStyle = `rgb(${v}, ${Math.round(v * 0.85)}, 255)`
+      ctx.fillRect(screenX, y, 8, 1)
     }
 
-    // Draw screen
-    const screenGrad = ctx.createLinearGradient(screenX, 0, screenX + 8, 0)
-    screenGrad.addColorStop(0, 'rgba(59, 130, 246, 0.3)')
-    screenGrad.addColorStop(0.5, 'rgba(6, 182, 212, 0.1)')
-    screenGrad.addColorStop(1, 'rgba(6, 11, 24, 0)')
-    ctx.fillStyle = screenGrad
-    ctx.fillRect(screenX, 0, 8, H)
-
+    // Draw screen edge
     ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)'
     ctx.lineWidth = 2
     ctx.beginPath()
@@ -147,6 +125,25 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
     ctx.font = '11px Inter, sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText('Screen', screenX + 4, H - 8)
+
+    // Draw rays to screen (pure interference, no diffraction envelope)
+    const numRays = 120
+    for (let i = 0; i < numRays; i++) {
+      const screenY = (i / numRays) * H
+      const theta = Math.atan2(screenY - H / 2, screenX - slitX)
+
+      const alpha = Math.PI * d * 1e-3 * Math.sin(theta) / lambda
+      const intensity = Math.cos(alpha) * Math.cos(alpha)
+
+      if (intensity > 0.01) {
+        ctx.strokeStyle = `rgba(0, 212, 255, ${intensity * 0.3})`
+        ctx.lineWidth = 0.5
+        ctx.beginPath()
+        ctx.moveTo(slitX + 6, H / 2)
+        ctx.lineTo(screenX - 2, screenY)
+        ctx.stroke()
+      }
+    }
 
     // Labels
     ctx.fillStyle = '#64748b'
@@ -171,27 +168,15 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
     ictx.fillRect(0, 0, iW, iH)
 
     const centerX = iW / 2
-    const maxY = iH - 16
 
-    // Calculate intensity pattern
+    // Calculate pure interference pattern (no diffraction envelope)
     const points: { x: number; y: number }[] = []
     for (let px = 0; px < iW; px++) {
-      const xPos = (px - centerX) / (iW / 2) * 0.02
-      const theta = xPos
+      const theta = (px - centerX) / (iW / 2) * 0.02
 
-      const beta = Math.PI * a * 1e-3 * Math.sin(theta) / (lambda)
-      const alpha = Math.PI * d * 1e-3 * Math.sin(theta) / (lambda)
-
-      let intensity
-      if (Math.abs(beta) < 0.001) {
-        intensity = Math.cos(alpha) * Math.cos(alpha)
-      } else {
-        const sinc = Math.sin(beta) / beta
-        intensity = sinc * sinc * Math.cos(alpha) * Math.cos(alpha)
-      }
-
-      intensity = Math.max(0, intensity)
-      const y = iH - 8 - intensity * maxY * 1.5
+      const alpha = Math.PI * d * 1e-3 * Math.sin(theta) / lambda
+      const intensity = Math.max(0, Math.cos(alpha) * Math.cos(alpha))
+      const y = iH - 8 - intensity * (iH - 24)
       points.push({ x: px, y })
     }
 
@@ -228,11 +213,78 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
       ictx.fill()
     }
 
-    // Labels
+    // Find peaks (bright fringes) and troughs (dark fringes) for labeling
+    const peakPxs: number[] = []
+    const troughPxs: number[] = []
+    for (let i = 2; i < points.length - 2; i++) {
+      if (points[i].y < points[i - 1].y && points[i].y <= points[i + 1].y) {
+        peakPxs.push(points[i].x)
+      }
+      if (points[i].y > points[i - 1].y && points[i].y >= points[i + 1].y) {
+        troughPxs.push(points[i].x)
+      }
+    }
+
+    // Label title
     ictx.fillStyle = '#64748b'
     ictx.font = '9px Inter, sans-serif'
     ictx.textAlign = 'center'
-    ictx.fillText('Intensity Pattern', iW / 2, 14)
+    ictx.fillText('Interference Pattern (I vs θ)', iW / 2, 12)
+
+    // Label central bright fringe
+    if (peakPxs.length > 0) {
+      const cx = peakPxs[0]
+      ictx.fillStyle = '#00d4ff'
+      ictx.font = '8px Inter, sans-serif'
+      ictx.textAlign = 'center'
+      ictx.fillText('Central Bright', cx, 28)
+      ictx.fillText('Fringe (n=0)', cx, 38)
+
+      // Fringe width bracket from central to first side peak
+      if (peakPxs.length > 1) {
+        const p1 = peakPxs[1]
+        const bracketY = 52
+        ictx.strokeStyle = 'rgba(255, 255, 255, 0.3)'
+        ictx.lineWidth = 1
+        ictx.beginPath()
+        ictx.moveTo(cx, bracketY)
+        ictx.lineTo(p1, bracketY)
+        ictx.stroke()
+        ictx.beginPath()
+        ictx.moveTo(cx, bracketY - 4)
+        ictx.lineTo(cx, bracketY + 4)
+        ictx.stroke()
+        ictx.beginPath()
+        ictx.moveTo(p1, bracketY - 4)
+        ictx.lineTo(p1, bracketY + 4)
+        ictx.stroke()
+        ictx.fillStyle = '#94a3b8'
+        ictx.font = '8px Inter, sans-serif'
+        ictx.textAlign = 'center'
+        ictx.fillText('Fringe Width (β)', (cx + p1) / 2, bracketY - 3)
+      }
+
+      // Label first bright fringe
+      if (peakPxs.length > 1) {
+        const p1 = peakPxs[1]
+        ictx.fillStyle = '#00d4ff'
+        ictx.font = '8px Inter, sans-serif'
+        ictx.textAlign = 'center'
+        ictx.fillText('Bright Fringe', p1, 28)
+        ictx.fillText('(n=1)', p1, 38)
+      }
+
+      // Label first dark fringe
+      if (troughPxs.length > 0) {
+        const t1 = troughPxs[0]
+        if (t1 > 0 && t1 < iW) {
+          ictx.fillStyle = '#64748b'
+          ictx.font = '8px Inter, sans-serif'
+          ictx.textAlign = 'center'
+          ictx.fillText('Dark Fringe', t1, H > 300 ? iH - 20 : iH - 14)
+        }
+      }
+    }
 
     timeRef.current += 1
     animRef.current = requestAnimationFrame(drawScene)
@@ -353,13 +405,14 @@ export default function DoubleSlitExperiment({ onBack }: { onBack: () => void })
         <h3>About this experiment</h3>
         <p>
           In Young's double-slit experiment, light from a single source is split into two coherent beams
-          that interfere, producing alternating bright and dark fringes. The fringe width is given by:
+          that interfere, producing alternating bright and dark fringes. In the ideal case, all bright
+          fringes have equal intensity. The fringe width is given by:
         </p>
         <div className="info-formula">β = λL / d</div>
         <p>
-          <strong>Key observations:</strong> Increasing d (slit separation) decreases fringe width.
-          Increasing λ (wavelength) increases fringe width. The single-slit envelope (from slit width a)
-          modulates the interference pattern intensity.
+          <strong>Key observations:</strong> All bright fringes have equal intensity (ideal case).
+          Fringes are equally spaced. Increasing d (slit separation) decreases fringe width.
+          Increasing λ (wavelength) increases fringe width. Fringe spacing is uniform across the screen.
         </p>
       </div>
 

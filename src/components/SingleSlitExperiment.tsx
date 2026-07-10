@@ -107,12 +107,16 @@ export default function SingleSlitExperiment({ onBack }: { onBack: () => void })
       }
     }
 
-    // Screen
-    const screenGrad = ctx.createLinearGradient(screenX, 0, screenX + 6, 0)
-    screenGrad.addColorStop(0, 'rgba(59, 130, 246, 0.3)')
-    screenGrad.addColorStop(1, 'rgba(6, 11, 24, 0)')
-    ctx.fillStyle = screenGrad
-    ctx.fillRect(screenX, 0, 6, H)
+    // Draw diffraction fringes on screen
+    const screenW = 8
+    for (let y = 0; y < H; y++) {
+      const theta = Math.atan2(y - H / 2, screenX - slitX)
+      const beta = Math.PI * a * 1e-3 * Math.sin(theta) / (lambda * 1e-9)
+      const intensity = Math.abs(beta) < 0.001 ? 1 : Math.pow(Math.sin(beta) / beta, 2)
+      const v = Math.round(Math.min(intensity, 1) * 220)
+      ctx.fillStyle = `rgb(${v}, ${Math.round(v * 0.8)}, ${Math.round(v * 0.9 + 35)})`
+      ctx.fillRect(screenX, y, screenW, 1)
+    }
 
     ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)'
     ctx.lineWidth = 2
@@ -125,6 +129,13 @@ export default function SingleSlitExperiment({ onBack }: { onBack: () => void })
     ctx.font = '11px Inter, sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText('Screen', screenX + 4, H - 8)
+
+    // Annotate central maximum on the main canvas
+    const centralY = H / 2
+    ctx.fillStyle = 'rgba(0, 212, 255, 0.5)'
+    ctx.font = '9px Inter, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('← Central Maximum →', screenX + 4, centralY - 10)
 
     // Labels
     ctx.fillStyle = '#00d4ff'
@@ -144,23 +155,16 @@ export default function SingleSlitExperiment({ onBack }: { onBack: () => void })
     ictx.fillRect(0, 0, iW, iH)
 
     const centerX = iW / 2
-    const maxY = iH - 16
 
     const points: { x: number; y: number }[] = []
     for (let px = 0; px < iW; px++) {
-      const xPos = (px - centerX) / (iW / 2) * 0.03
-      const theta = xPos
+      const theta = (px - centerX) / (iW / 2) * 0.03
 
       const beta = Math.PI * a * 1e-3 * Math.sin(theta) / (lambda * 1e-9)
-      let intensity
-      if (Math.abs(beta) < 0.001) {
-        intensity = 1
-      } else {
-        intensity = Math.pow(Math.sin(beta) / beta, 2)
-      }
-
-      intensity = Math.max(0, intensity)
-      const y = iH - 8 - intensity * maxY
+      const intensity = Math.max(0, Math.abs(beta) < 0.001 ? 1 : Math.pow(Math.sin(beta) / beta, 2))
+      // Use sqrt scaling to make secondary maxima visible (common in educational sims)
+      const display = Math.sqrt(intensity)
+      const y = iH - 8 - display * (iH - 24)
       points.push({ x: px, y })
     }
 
@@ -195,10 +199,61 @@ export default function SingleSlitExperiment({ onBack }: { onBack: () => void })
       ictx.fill()
     }
 
+    // Find peaks and minima for educational labels
+    const peakPxs: number[] = []
+    const minimaPxs: number[] = []
+    for (let i = 2; i < points.length - 2; i++) {
+      if (points[i].y < points[i - 1].y && points[i].y <= points[i + 1].y) {
+        peakPxs.push(points[i].x)
+      }
+      if (points[i].y > points[i - 1].y && points[i].y >= points[i + 1].y) {
+        const intensityVal = 1 - (points[i].y - (iH - 8)) / (-points[i].y + iH - 8)
+        if (intensityVal < 0.1) {
+          minimaPxs.push(points[i].x)
+        }
+      }
+    }
+
+    // Title
     ictx.fillStyle = '#64748b'
     ictx.font = '9px Inter, sans-serif'
     ictx.textAlign = 'center'
-    ictx.fillText('Single Slit Diffraction Pattern', iW / 2, 14)
+    ictx.fillText('Single Slit Diffraction Pattern (I vs θ)', iW / 2, 12)
+
+    // Label Central Maximum
+    if (peakPxs.length > 0) {
+      const cx = peakPxs[0]
+      ictx.fillStyle = '#00d4ff'
+      ictx.font = '8px Inter, sans-serif'
+      ictx.textAlign = 'center'
+      ictx.fillText('Central Maximum', cx, 28)
+      ictx.fillText('(2× wider)', cx, 38)
+
+      // Label Secondary Maxima
+      for (let i = 1; i < Math.min(peakPxs.length, 4); i++) {
+        const sx = peakPxs[i]
+        if (sx > 10 && sx < iW - 10) {
+          ictx.fillStyle = i % 2 === 1 ? '#06b6d4' : '#3b82f6'
+          ictx.font = '7px Inter, sans-serif'
+          ictx.textAlign = 'center'
+          const label = i === 1 ? '1st Secondary' : `${i}nd Secondary`
+          ictx.fillText(label, sx, iH - 26)
+          ictx.fillText('Maxima', sx, iH - 18)
+        }
+      }
+
+      // Label Dark Fringe
+      for (let i = 0; i < Math.min(minimaPxs.length, 4); i++) {
+        const mx = minimaPxs[i]
+        if (mx > 10 && mx < iW - 10) {
+          ictx.fillStyle = '#64748b'
+          ictx.font = '7px Inter, sans-serif'
+          ictx.textAlign = 'center'
+          ictx.fillText('Dark', mx, iH - 26)
+          ictx.fillText('Fringe', mx, iH - 18)
+        }
+      }
+    }
 
     animRef.current = requestAnimationFrame(drawScene)
   }, [params])
@@ -297,8 +352,9 @@ export default function SingleSlitExperiment({ onBack }: { onBack: () => void })
         <div className="info-formula">a sin θ = nλ (minima)</div>
         <p>
           <strong>Key observations:</strong> The central maximum is twice as wide as the secondary
-          maxima. Decreasing slit width (a) widens the diffraction pattern. Most of the light energy
-          is concentrated in the central maximum.
+          maxima. The intensity of successive fringes decreases rapidly (secondary maxima are ~4.7%
+          of the central peak). Decreasing slit width (a) widens the diffraction pattern. Most of
+          the light energy is concentrated in the central maximum.
         </p>
       </div>
 
