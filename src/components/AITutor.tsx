@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { sendMessage, generateNotes, ChatMessage } from '../utils/openRouter'
 import { speakText, stopSpeaking, isSpeaking, startListening, stopListening } from '../utils/speech'
+import katex from 'katex'
 
 interface SavedNote {
   id: string
@@ -197,14 +198,28 @@ export default function AITutor() {
     setStreamingContent('')
   }
 
+  const renderMath = (latex: string, displayMode: boolean): string => {
+    try {
+      return katex.renderToString(latex, {
+        displayMode,
+        throwOnError: false,
+        output: 'html',
+      })
+    } catch {
+      return latex
+    }
+  }
+
   const renderFormattedText = (text: string) => {
     const parts = text.split(/(\$\$.*?\$\$|\$.*?\$)/gs)
     return parts.map((part, i) => {
       if (part.startsWith('$$') && part.endsWith('$$')) {
-        return <div key={i} className="formula-block">{part.slice(2, -2).trim()}</div>
+        const html = renderMath(part.slice(2, -2).trim(), true)
+        return <div key={i} className="formula-block" dangerouslySetInnerHTML={{ __html: html }} />
       }
       if (part.startsWith('$') && part.endsWith('$')) {
-        return <span key={i} className="formula-inline">{part.slice(1, -1)}</span>
+        const html = renderMath(part.slice(1, -1), false)
+        return <span key={i} className="formula-inline" dangerouslySetInnerHTML={{ __html: html }} />
       }
       const lines = part.split('\n')
       return lines.map((line, j) => {
@@ -312,14 +327,7 @@ export default function AITutor() {
                 </div>
               </div>
               <div className="notes-content">
-                {notesResult.split('\n').map((line, i) => {
-                  if (line.startsWith('## ')) return <h3 key={i} className="notes-h3">{line.slice(3)}</h3>
-                  if (line.startsWith('### ')) return <h4 key={i} className="notes-h4">{line.slice(4)}</h4>
-                  if (line.startsWith('- ')) return <li key={i} className="notes-li">{line.slice(2)}</li>
-                  if (line.match(/^\d+\.\s/)) return <li key={i} className="notes-li">{line.replace(/^\d+\.\s/, '')}</li>
-                  if (line.trim() === '') return null
-                  return <p key={i} className="notes-p">{line}</p>
-                })}
+                {renderFormattedText(notesResult)}
               </div>
             </div>
           )}
@@ -731,20 +739,21 @@ export default function AITutor() {
         .formula-block {
           display: block;
           text-align: center;
-          padding: 12px;
-          margin: 8px 0;
+          padding: 16px 12px;
+          margin: 12px 0;
           background: rgba(59, 130, 246, 0.05);
           border-radius: var(--radius-sm);
-          font-family: var(--font-mono);
-          color: var(--accent-electric);
-          font-size: 15px;
           border: 1px solid rgba(59, 130, 246, 0.1);
+          overflow-x: auto;
+        }
+        .formula-block .katex {
+          font-size: 1.2em;
         }
         .formula-inline {
-          font-family: var(--font-mono);
-          color: var(--accent-electric);
-          font-size: 14px;
           padding: 0 2px;
+        }
+        .formula-inline .katex {
+          font-size: 1.05em;
         }
         .msg-actions {
           display: flex;
