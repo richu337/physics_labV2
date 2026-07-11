@@ -1,13 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { topics, Topic } from '../data/classData'
 
 export default function Classes() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-  const [filter, setFilter] = useState<'all' | 'ray-optics' | 'wave-optics'>('all')
-
-  const filteredTopics = useMemo(() => {
-    return filter === 'all' ? topics : topics.filter((t) => t.topic === filter)
-  }, [filter])
 
   if (selectedTopic) {
     return (
@@ -22,23 +17,11 @@ export default function Classes() {
     <div className="classes-page animate-fade-in">
       <div className="page-header">
         <h1 className="page-title">Classes</h1>
-        <p className="page-desc">Interactive lessons on Ray Optics & Wave Optics</p>
-      </div>
-
-      <div className="topic-filters">
-        {(['all', 'ray-optics', 'wave-optics'] as const).map((f) => (
-          <button
-            key={f}
-            className={`filter-btn${filter === f ? ' active' : ''}`}
-            onClick={() => setFilter(f)}
-          >
-            {f === 'all' ? 'All' : f === 'ray-optics' ? 'Ray Optics' : 'Wave Optics'}
-          </button>
-        ))}
+        <p className="page-desc">Wave Optics — Diffraction & Interference</p>
       </div>
 
       <div className="topics-grid">
-        {filteredTopics.map((topic) => (
+        {topics.map((topic) => (
           <button
             key={topic.id}
             className="topic-card glass-card"
@@ -47,8 +30,8 @@ export default function Classes() {
             <div className="topic-card-icon">{topic.icon}</div>
             <h3 className="topic-card-title">{topic.title}</h3>
             <p className="topic-card-desc">{topic.description}</p>
-            <div className={`badge ${topic.topic === 'ray-optics' ? 'badge-blue' : 'badge-cyan'}`} style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
-              {topic.topic === 'ray-optics' ? 'Ray Optics' : 'Wave Optics'}
+            <div className="badge badge-cyan" style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+              Wave Optics
             </div>
           </button>
         ))}
@@ -74,34 +57,6 @@ export default function Classes() {
         .page-desc {
           color: var(--text-secondary);
           font-size: 15px;
-        }
-        .topic-filters {
-          display: flex;
-          gap: 4px;
-          background: var(--bg-card);
-          border-radius: var(--radius-sm);
-          padding: 3px;
-          margin-bottom: 24px;
-          max-width: 400px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-        .filter-btn {
-          flex: 1;
-          padding: 8px 16px;
-          border-radius: 6px;
-          background: transparent;
-          color: var(--text-muted);
-          font-size: 13px;
-          font-weight: 500;
-          transition: var(--transition);
-        }
-        .filter-btn:hover {
-          color: var(--text-secondary);
-        }
-        .filter-btn.active {
-          background: var(--accent-blue);
-          color: white;
         }
         .topics-grid {
           display: grid;
