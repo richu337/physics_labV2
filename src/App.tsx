@@ -4,8 +4,9 @@ import Quiz from './components/Quiz'
 import Classes from './components/Classes'
 import AITutor from './components/AITutor'
 import Labs from './components/Labs'
+import Videos from './components/Videos'
 
-export type TabId = 'quizzes' | 'classes' | 'tutor' | 'labs'
+export type TabId = 'quizzes' | 'classes' | 'tutor' | 'labs' | 'videos'
 
 export interface TabInfo {
   id: TabId
@@ -18,6 +19,7 @@ const TABS: TabInfo[] = [
   { id: 'classes', label: 'Classes', icon: '📚' },
   { id: 'tutor', label: 'AI Tutor', icon: '🤖' },
   { id: 'labs', label: 'Labs', icon: '🔬' },
+  { id: 'videos', label: 'Videos', icon: '🎥' },
 ]
 
 export default function App() {
@@ -37,6 +39,8 @@ export default function App() {
         return <AITutor />
       case 'labs':
         return <Labs />
+      case 'videos':
+        return <Videos />
       default:
         return <Quiz />
     }
