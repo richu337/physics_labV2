@@ -112,9 +112,7 @@ function TopicDetail({ topic, onBack }: { topic: Topic; onBack: () => void }) {
         <span className="detail-icon">{topic.icon}</span>
         <div>
           <h1 className="detail-title">{topic.title}</h1>
-          <div className={`badge ${topic.topic === 'ray-optics' ? 'badge-blue' : 'badge-cyan'}`}>
-            {topic.topic === 'ray-optics' ? 'Ray Optics' : 'Wave Optics'}
-          </div>
+          <div className="badge badge-cyan">Wave Optics</div>
         </div>
       </div>
 

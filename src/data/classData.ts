@@ -5,7 +5,7 @@ export interface Topic {
   content: string
   formulas: { name: string; formula: string }[]
   icon: string
-  topic: 'ray-optics' | 'wave-optics'
+  topic: 'wave-optics'
 }
 
 export const topics: Topic[] = [

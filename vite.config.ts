@@ -10,7 +10,7 @@ export default defineConfig({
       manifest: {
         name: 'Physics Lab v2 - Optics',
         short_name: 'Physics Lab',
-        description: 'Interactive physics lab for ray optics and wave optics',
+        description: 'Interactive physics lab for wave optics',
         theme_color: '#0a0e1a',
         background_color: '#0a0e1a',
         display: 'standalone',

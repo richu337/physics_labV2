@@ -14,7 +14,7 @@ export async function sendMessage(
 ): Promise<string> {
   const systemPrompt: ChatMessage = {
     role: 'system',
-    content: `You are an expert physics tutor specializing in Ray Optics and Wave Optics. 
+    content: `You are an expert physics tutor specializing in Wave Optics. 
 You explain concepts clearly with examples, formulas, and real-world applications.
 When asked about physics topics, provide detailed explanations with relevant formulas.
 You can also help generate study notes on any optics topic.
@@ -92,7 +92,7 @@ export async function generateNotes(
   topic: string,
   apiKey: string
 ): Promise<string> {
-  const prompt = `Generate comprehensive study notes on "${topic}" from Ray Optics / Wave Optics. Include:
+  const prompt = `Generate comprehensive study notes on "${topic}" from Wave Optics. Include:
 1. Key concepts and definitions
 2. Important formulas with explanations
 3. Real-world applications

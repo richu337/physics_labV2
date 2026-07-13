@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import DoubleSlitExperiment from './DoubleSlitExperiment'
 import SingleSlitExperiment from './SingleSlitExperiment'
-import RayOpticsSim from './RayOpticsSim'
 
 const LABS = [
   {
@@ -16,12 +15,6 @@ const LABS = [
     desc: 'Diffraction pattern from a single aperture',
     icon: '🔆',
   },
-  {
-    id: 'rayoptics',
-    title: 'Ray Optics Simulator',
-    desc: 'Interactive reflection, refraction & lens simulation',
-    icon: '💡',
-  },
 ] as const
 
 type LabId = (typeof LABS)[number]['id']
@@ -34,9 +27,6 @@ export default function Labs() {
   }
   if (activeLab === 'singleslit') {
     return <SingleSlitExperiment onBack={() => setActiveLab(null)} />
-  }
-  if (activeLab === 'rayoptics') {
-    return <RayOpticsSim onBack={() => setActiveLab(null)} />
   }
 
   return (

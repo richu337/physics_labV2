@@ -22,10 +22,10 @@ const SAVED_MODELS = [
 const SUGGESTIONS = [
   'Explain Young\'s double slit experiment',
   'What is the difference between interference and diffraction?',
-  'Derive the lens maker\'s formula',
-  'Explain total internal reflection with examples',
   'What is polarization and how is it used in 3D movies?',
   'Generate notes on diffraction grating',
+  'Explain the concept of coherence in wave optics',
+  'What is the principle of superposition of waves?',
 ]
 
 export default function AITutor() {
@@ -378,7 +378,7 @@ export default function AITutor() {
             <div className="chat-welcome">
               <div className="welcome-icon">🔬</div>
               <h2>Ask me anything about optics!</h2>
-              <p>I can help you understand ray optics, wave optics, solve problems, and generate notes.</p>
+              <p>I can help you understand wave optics, solve problems, and generate notes.</p>
               <div className="suggestions">
                 {SUGGESTIONS.map((s, i) => (
                   <button

@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { quizData, QuizQuestion } from '../data/quizData'
 
 type Difficulty = 'all' | 'easy' | 'medium' | 'hard'
-type TopicFilter = 'all' | 'ray-optics' | 'wave-optics'
+type TopicFilter = 'all' | 'wave-optics'
 
 interface QuizState {
   current: number
@@ -104,7 +104,7 @@ export default function Quiz() {
       <div className="quiz-page animate-fade-in">
         <div className="page-header">
           <h1 className="page-title">Quizzes</h1>
-          <p className="page-desc">Test your knowledge of Ray Optics and Wave Optics</p>
+          <p className="page-desc">Test your knowledge of Wave Optics</p>
         </div>
 
         <div className="quiz-setup">
@@ -116,13 +116,13 @@ export default function Quiz() {
             <div className="setup-controls">
               <label className="setup-label">Topic</label>
               <div className="topic-tabs">
-                {(['all', 'ray-optics', 'wave-optics'] as const).map((t) => (
+                {(['all', 'wave-optics'] as const).map((t) => (
                   <button
                     key={t}
                     className={`topic-btn${topicFilter === t ? ' active' : ''}`}
                     onClick={() => setTopicFilter(t)}
                   >
-                    {t === 'all' ? 'All Topics' : t === 'ray-optics' ? 'Ray Optics' : 'Wave Optics'}
+                    {t === 'all' ? 'All Topics' : 'Wave Optics'}
                   </button>
                 ))}
               </div>
@@ -285,7 +285,7 @@ export default function Quiz() {
                     <span className="review-status">
                       {quizState.answers[i] === q.correctIndex ? '✓' : '✗'}
                     </span>
-                    <span className="review-topic badge badge-cyan">{q.topic === 'ray-optics' ? 'Ray' : 'Wave'}</span>
+                    <span className="review-topic badge badge-cyan">Wave</span>
                   </div>
                 ))}
               </div>
@@ -398,9 +398,7 @@ export default function Quiz() {
 
         <div className="question-card glass-card-static">
           <div className="question-topic">
-            <span className={`badge ${question.topic === 'ray-optics' ? 'badge-blue' : 'badge-cyan'}`}>
-              {question.topic === 'ray-optics' ? 'Ray Optics' : 'Wave Optics'}
-            </span>
+            <span className="badge badge-cyan">Wave Optics</span>
           </div>
           <h2 className="question-text">{question.question}</h2>
 
