@@ -20,8 +20,8 @@ export default function Navbar({ tabs, activeTab, onTabChange }: NavbarProps) {
             </svg>
           </div>
           <div className="brand-text">
-            <span className="brand-title">Physics Lab</span>
-            <span className="brand-subtitle">v2 — Optics</span>
+            <span className="brand-title">WaveX</span>
+            <span className="brand-subtitle">Cyber Optics Sandbox</span>
           </div>
         </div>
         <div className="navbar-tabs">

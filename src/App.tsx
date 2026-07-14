@@ -5,6 +5,7 @@ import Classes from './components/Classes'
 import AITutor from './components/AITutor'
 import Labs from './components/Labs'
 import Videos from './components/Videos'
+import SplashScreen from './components/SplashScreen'
 
 export type TabId = 'quizzes' | 'classes' | 'tutor' | 'labs' | 'videos'
 
@@ -24,9 +25,14 @@ const TABS: TabInfo[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabId>('quizzes')
+  const [showSplash, setShowSplash] = useState(true)
 
   const handleTabChange = useCallback((tab: TabId) => {
     setActiveTab(tab)
+  }, [])
+
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false)
   }, [])
 
   const renderContent = () => {
@@ -47,18 +53,21 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
-      <div className="bg-grid" />
-      <div className="bg-glow" />
-      <div className="bg-glow-2" />
-      <Navbar
-        tabs={TABS}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
-      <main className="content-area">
-        {renderContent()}
-      </main>
-    </div>
+    <>
+      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      <div className="app-container" style={{ display: showSplash ? 'none' : undefined }}>
+        <div className="bg-grid" />
+        <div className="bg-glow" />
+        <div className="bg-glow-2" />
+        <Navbar
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+        <main className="content-area">
+          {renderContent()}
+        </main>
+      </div>
+    </>
   )
 }
